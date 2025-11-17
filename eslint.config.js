@@ -7,7 +7,6 @@ import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
 import { defineConfig, globalIgnores } from 'eslint/config'
-import tanstackQuery from '@tanstack/eslint-plugin-query'
 import eslintReact from '@eslint-react/eslint-plugin';
 
 export default defineConfig([
@@ -30,7 +29,6 @@ export default defineConfig([
     },
     plugins: {
       react: reactPlugin,
-      '@tanstack/query': tanstackQuery,
       prettier: prettierPlugin
     },
     extends: [
