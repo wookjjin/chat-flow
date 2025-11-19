@@ -1,7 +1,6 @@
+import Aside from '@/components/layout/Aside';
+import Header from '@/components/layout/Header';
 import { Outlet } from 'react-router';
-import Header from './Header';
-import Footer from './Footer';
-import Aside from './Aside';
 
 export default function Root() {
   return (
@@ -12,7 +11,6 @@ export default function Root() {
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
-        <Footer />
       </div>
     </div>
   );

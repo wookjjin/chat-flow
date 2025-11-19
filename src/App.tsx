@@ -1,6 +1,6 @@
-import { Toaster } from 'sonner';
+import Root from '@/components/layout/Root';
 import { BrowserRouter, Route, Routes } from 'react-router';
-import Root from './components/layout/Root';
+import { Toaster } from 'sonner';
 
 function App() {
   return (
