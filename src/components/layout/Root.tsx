@@ -1,6 +1,7 @@
+import { Outlet } from 'react-router';
+
 import Aside from '@/components/layout/Aside';
 import Header from '@/components/layout/Header';
-import { Outlet } from 'react-router';
 
 export default function Root() {
   return (
