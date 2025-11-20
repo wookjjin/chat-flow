@@ -3,7 +3,7 @@ import { Outlet } from 'react-router';
 import Aside from '@/components/layout/Aside';
 import Header from '@/components/layout/Header';
 
-export default function Root() {
+export default function RootLayout() {
   return (
     <div className="flex h-screen">
       <Aside />

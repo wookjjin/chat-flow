@@ -45,6 +45,7 @@ export default defineConfig([
       'no-console': 'error',
       'no-unused-vars': 'error',
       'react/jsx-no-target-blank': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     },
   },
   prettierConfig
