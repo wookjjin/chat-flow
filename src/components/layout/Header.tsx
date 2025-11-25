@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 
 export default function Header() {
   return (
-    <header className="border-b bg-white p-4">
+    <header className="h-14 border-b bg-white p-4">
       <nav className="mx-auto flex items-center justify-end">
         <div className="space-x-4">
           <div className="cursor-pointer">
