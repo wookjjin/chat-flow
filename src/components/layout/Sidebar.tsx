@@ -13,10 +13,12 @@ import type { ChatListProps, SidebarActionsProps, SidebarHeaderProps } from '@/t
 
 function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
   return (
-    <div className="h-14 flex items-center justify-between px-4">
+    <div className="h-14 flex items-center justify-between px-4 overflow-hidden">
       {isOpen ? (
         <>
-          <span className="font-semibold text-lg">ChatFlow</span>
+          <span className="font-semibold text-lg whitespace-nowrap animate-in slide-in-from-left-4 fade-in duration-300 delay-100">
+            ChatFlow
+          </span>
           <PanelLeftClose className="cursor-pointer" color="gray" size={18} onClick={onToggle} />
         </>
       ) : (
@@ -32,46 +34,62 @@ function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
 }
 
 function SidebarActions({ isOpen }: SidebarActionsProps) {
-  if (!isOpen) {
-    return (
-      <div className="flex flex-col items-center gap-6">
+  return (
+    <>
+      <div
+        className={cn(
+          'flex flex-col gap-6 transition-all duration-300',
+          isOpen ? 'opacity-0 hidden' : 'opacity-100 items-center delay-100',
+        )}
+      >
         <SquarePen className="cursor-pointer" color="gray" size={18} />
         <Search className="cursor-pointer" color="gray" size={18} />
       </div>
-    );
-  }
 
-  return (
-    <>
-      <Button variant="outline" className="cursor-pointer text-gray-700">
-        <SquarePen />새 채팅
-      </Button>
-      <Button variant="outline" className="cursor-pointer text-gray-700">
-        <Search />
-        채팅 검색
-      </Button>
+      <div className={cn('flex flex-col gap-2', isOpen ? 'flex' : 'hidden')}>
+        <Button
+          variant="outline"
+          className="cursor-pointer text-gray-700 animate-in slide-in-from-top-2 fade-in duration-300 delay-150"
+        >
+          <SquarePen />새 채팅
+        </Button>
+        <Button
+          variant="outline"
+          className="cursor-pointer text-gray-700 animate-in slide-in-from-top-2 fade-in duration-300 delay-200"
+        >
+          <Search />
+          채팅 검색
+        </Button>
+      </div>
     </>
   );
 }
 
 function ChatList({ isOpen, chats }: ChatListProps) {
-  if (!isOpen) return null;
-
   return (
-    <>
-      <label className="text-gray-500 mb-2">내 채팅</label>
-      <div className="space-y-2">
-        {chats.map((chat) => (
-          <div
-            key={chat.id}
-            className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-          >
-            <div className="font-medium">{chat.title}</div>
-            <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>
+    <div
+      className={cn(
+        'transition-opacity duration-200',
+        isOpen ? 'opacity-100 delay-300' : 'opacity-0',
+      )}
+    >
+      {isOpen && (
+        <>
+          <label className="text-gray-500 mb-2">내 채팅</label>
+          <div className="space-y-2">
+            {chats.map((chat) => (
+              <div
+                key={chat.id}
+                className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+              >
+                <div className="font-medium">{chat.title}</div>
+                <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </>
+        </>
+      )}
+    </div>
   );
 }
 
