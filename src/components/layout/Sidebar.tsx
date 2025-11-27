@@ -5,6 +5,7 @@ import { useState } from 'react';
 import chatList from '@/api/chat/chatList.json' with { type: 'json' };
 import { cn } from '@/lib/utils';
 import { PanelLeftClose, PanelLeftOpen, Search, SquarePen } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -34,6 +35,11 @@ function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
 }
 
 function SidebarActions({ isOpen }: SidebarActionsProps) {
+  const navigate = useNavigate();
+
+  const handleNewChat = () => {
+    navigate('/');
+  };
   return (
     <>
       <div
@@ -50,6 +56,7 @@ function SidebarActions({ isOpen }: SidebarActionsProps) {
         <Button
           variant="outline"
           className="cursor-pointer text-gray-700 animate-in slide-in-from-top-2 fade-in duration-300 delay-150"
+          onClick={handleNewChat}
         >
           <SquarePen />새 채팅
         </Button>

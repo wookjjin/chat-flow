@@ -1,3 +1,4 @@
+import ChatRoom from '@/pages/chat';
 import ChatMain from '@/pages/chat-main';
 import { createBrowserRouter } from 'react-router';
 
@@ -14,7 +15,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'chat/:id',
-        element: <ChatMain />,
+        element: <ChatRoom />,
       },
     ],
   },

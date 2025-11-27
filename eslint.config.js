@@ -42,10 +42,22 @@ export default defineConfig([
     rules: {
       'prettier/prettier': 'error',
       'react/react-in-jsx-scope': 'off',
-      'no-console': 'error',
-      'no-unused-vars': 'error',
+      'no-console': 'off',
+      'no-unused-vars': 'off',
       'react/jsx-no-target-blank': 'off',
-      '@typescript-eslint/no-explicit-any': 'off'
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          'args': 'all',
+          'argsIgnorePattern': '^_',
+          'caughtErrors': 'all',
+          'caughtErrorsIgnorePattern': '^_',
+          'destructuredArrayIgnorePattern': '^_',
+          'varsIgnorePattern': '^_',
+          'ignoreRestSiblings': true
+        }
+      ]
     },
   },
   prettierConfig
