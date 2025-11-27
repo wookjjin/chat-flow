@@ -128,15 +128,13 @@ export default function ChatRoom() {
       setIsStreaming(false);
 
       // 에러 메시지 추가
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: '응답을 받는 중 오류가 발생했습니다. 다시 시도해주세요.',
-          timestamp: new Date(),
-        },
-      ]);
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '응답을 받는 중 오류가 발생했습니다. 다시 시도해주세요.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     };
   }, []);
 
@@ -144,11 +142,9 @@ export default function ChatRoom() {
     if (initialMessage && !hasProcessedInitialMessage.current) {
       hasProcessedInitialMessage.current = true;
       // 초기 메시지가 있으면 자동으로 전송
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         startStreaming(initialMessage);
       }, 500);
-
-      return () => clearTimeout(timer);
     }
   }, [initialMessage, startStreaming]);
 
