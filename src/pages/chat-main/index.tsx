@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { generateUniqueKey } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
@@ -13,7 +14,7 @@ export default function ChatMain() {
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
-    navigate('/chat/4sf429dasd93aa2', { state: { initialMessage: message } });
+    navigate(`/chat/${generateUniqueKey()}`, { state: { initialMessage: message } });
 
     setMessage('');
     if (editableRef.current) {
