@@ -7,4 +7,5 @@ export interface EditableInputProps {
   maxHeight?: string;
   className?: string;
   disabled?: boolean;
+  autoFocus?: boolean;
 }

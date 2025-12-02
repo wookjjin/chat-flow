@@ -13,6 +13,7 @@ export default function EditableInput({
   maxHeight = 'max-h-52',
   className,
   disabled,
+  autoFocus,
 }: EditableInputProps) {
   useEffect(() => {
     if (inputRef?.current) {
@@ -21,6 +22,12 @@ export default function EditableInput({
       }
     }
   }, [value, inputRef]);
+
+  useEffect(() => {
+    if (autoFocus && inputRef?.current) {
+      inputRef.current.focus();
+    }
+  }, [autoFocus, inputRef]);
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const text = e.currentTarget.textContent || '';

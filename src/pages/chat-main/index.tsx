@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { generateUniqueKey } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
@@ -23,6 +23,10 @@ export default function ChatMain() {
     }
   };
 
+  useEffect(() => {
+    if (editableRef.current) editableRef.current?.focus();
+  }, [editableRef]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="h-85 flex flex-col items-center justify-end pb-6">
@@ -36,6 +40,7 @@ export default function ChatMain() {
             onChange={setMessage}
             onEnter={handleSendMessage}
             placeholder="메시지를 입력하세요"
+            autoFocus
           />
           <SendHorizontal
             aria-disabled={!message}

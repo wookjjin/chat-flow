@@ -66,6 +66,7 @@ function SearchDialog({
           value={searchText}
           onChange={onSearchChange}
           placeholder="채팅 검색..."
+          autoFocus
         />
         <XIcon className="cursor-pointer" color="gray" size={18} onClick={handleClose} />
       </div>
