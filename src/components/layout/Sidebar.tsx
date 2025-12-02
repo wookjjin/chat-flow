@@ -27,7 +27,7 @@ import type {
 function ChatItem({ chat, onClick }: ChatItemProps) {
   return (
     <div
-      className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+      className="py-2 px-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
       onClick={onClick}
     >
       <div className="font-medium">{chat.title}</div>
@@ -39,7 +39,6 @@ function ChatItem({ chat, onClick }: ChatItemProps) {
 // ============================================================================
 // Search Dialog Component
 // ============================================================================
-
 function SearchDialog({
   onOpenChange,
   searchText,
@@ -48,8 +47,13 @@ function SearchDialog({
   onNewChat,
 }: SearchDialogProps) {
   const editableRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
   const handleClose = () => onOpenChange(false);
+
+  const handleSelectChat = (chatId: string) => {
+    handleClose();
+    navigate(`/chat/${chatId}`);
+  };
 
   return (
     <DialogContent
@@ -68,31 +72,28 @@ function SearchDialog({
 
       <Separator />
 
-      <Button
-        variant="ghost"
-        className="cursor-pointer text-gray-700 justify-start"
-        onClick={onNewChat}
-      >
-        <SquarePen />새 채팅
-      </Button>
+      <div className="h-80 overflow-y-auto flex flex-col gap-2">
+        <Button
+          variant="ghost"
+          className="cursor-pointer text-gray-700 justify-start"
+          onClick={onNewChat}
+        >
+          <SquarePen />새 채팅
+        </Button>
 
-      <label className="px-4 text-gray-500 mb-2">내 채팅</label>
+        <label className="px-3 text-gray-500">내 채팅</label>
 
-      <div
-        className={cn(
-          'h-80 overflow-y-auto mt-3 flex flex-col',
-          filteredChats.length === 0 && 'justify-center items-center',
-        )}
-      >
-        {filteredChats.length === 0 ? (
-          <div className="text-center text-gray-400 py-4">검색 결과가 없습니다.</div>
-        ) : (
-          <div className="space-y-2 px-3">
-            {filteredChats.map((chat) => (
-              <ChatItem key={chat.id} chat={chat} />
-            ))}
-          </div>
-        )}
+        <div className={cn(filteredChats.length === 0 && 'justify-center items-center')}>
+          {filteredChats.length === 0 ? (
+            <div className="text-center text-gray-400 py-4">검색 결과가 없습니다.</div>
+          ) : (
+            <div className="space-y-2">
+              {filteredChats.map((chat) => (
+                <ChatItem key={chat.id} chat={chat} onClick={() => handleSelectChat(chat.id)} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </DialogContent>
   );
