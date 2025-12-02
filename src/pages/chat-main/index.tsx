@@ -4,7 +4,7 @@ import { generateUniqueKey } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-import EditableInput from '@/components/ui/EditableInput';
+import EditableInput from '@/components/ui/editable-input';
 
 export default function ChatMain() {
   const navigate = useNavigate();

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { useLocation } from 'react-router';
 
-import EditableInput from '@/components/ui/EditableInput';
+import EditableInput from '@/components/ui/editable-input';
 
 import type { Message, StreamChunk } from '@/types/chat';
 
