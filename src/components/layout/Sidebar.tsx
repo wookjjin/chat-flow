@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import chatList from '@/api/chat/chatList.json' with { type: 'json' };
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { PanelLeftClose, PanelLeftOpen, Search, SquarePen, XIcon } from 'lucide-react';
@@ -14,6 +13,7 @@ import EditableInput from '@/components/ui/editable-input';
 import { Separator } from '@/components/ui/separator';
 
 import type {
+  Chat,
   ChatItemProps,
   ChatListProps,
   SearchDialogProps,
@@ -223,7 +223,18 @@ function ChatList({ isOpen, chats }: ChatListProps) {
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [chatList, setChatList] = useState<Chat[]>([]);
   const debouncedSearch = useDebounce(searchText, 200);
+
+  useEffect(() => {
+    const getChatList = async () => {
+      const response = await request.get<Chat[]>('/chats');
+      console.log(response.data);
+
+      setChatList(response.data);
+    };
+    getChatList();
+  }, []);
 
   const filteredChats = useMemo(() => {
     const query = debouncedSearch.trim().toLowerCase();
@@ -234,7 +245,7 @@ export default function Sidebar() {
         chat.title?.toLowerCase().includes(query) ||
         chat.lastMessage?.toLowerCase().includes(query),
     );
-  }, [debouncedSearch]);
+  }, [debouncedSearch, chatList]);
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
