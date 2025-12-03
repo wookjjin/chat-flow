@@ -134,7 +134,9 @@ function SidebarActions({ isOpen, searchText, setSearchText, filteredChats }: Si
 
   const handleNewChat = () => {
     setIsDialogOpen(false);
-    navigate('/');
+    setTimeout(() => {
+      navigate('/', { state: { refresh: true } });
+    }, 200);
   };
 
   return (
