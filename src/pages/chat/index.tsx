@@ -9,6 +9,10 @@ import EditableInput from '@/components/ui/editable-input';
 
 import type { Message, StreamChunk } from '@/types/chat';
 
+const appStartTime = Date.now();
+const appStartTimeDate = new Date(appStartTime);
+let nextMessageSeq = 0;
+
 export default function ChatRoom() {
   const location = useLocation();
 
@@ -24,10 +28,10 @@ export default function ChatRoom() {
     if (initialMessage) {
       return [
         {
-          id: Date.now().toString(),
+          chatId: `${appStartTime}-initial`,
           role: 'user',
           content: initialMessage,
-          timestamp: new Date(),
+          timestamp: appStartTimeDate,
         },
       ];
     }
@@ -38,27 +42,39 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim() || isStreaming) return;
 
     const userMessage = message.trim();
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        role: 'user',
-        content: userMessage,
-        timestamp: new Date(),
-      },
-    ]);
+    const seq = nextMessageSeq++;
+    const chatId = `${appStartTime}-${seq}`;
     setMessage('');
 
     if (editableRef.current) {
       editableRef.current.textContent = '';
     }
 
-    // SSE 연결 시작
+    const newUserMessage: Message = {
+      chatId: chatId,
+      role: 'user',
+      content: userMessage,
+      timestamp: appStartTimeDate,
+    };
+
+    setMessages((prev) => [...prev, newUserMessage]);
+
+    try {
+      await request.post('/chats/message', {
+        chatId,
+        role: 'user',
+        content: userMessage,
+        timestamp: appStartTimeDate,
+      });
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+
     startStreaming(userMessage);
     scrollToBottom();
   };
@@ -94,7 +110,7 @@ export default function ChatRoom() {
           streamingContent = '';
 
           const assistantMessage: Message = {
-            id: currentMessageId,
+            chatId: currentMessageId,
             role: 'assistant',
             content: '',
             timestamp: new Date(),
@@ -107,7 +123,7 @@ export default function ChatRoom() {
 
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.id === currentMessageId ? { ...msg, content: streamingContent } : msg,
+              msg.chatId === currentMessageId ? { ...msg, content: streamingContent } : msg,
             ),
           );
           scrollToBottom();
@@ -129,11 +145,12 @@ export default function ChatRoom() {
       setIsStreaming(false);
 
       // 에러 메시지 추가
+      const errorSeq = nextMessageSeq++;
       const errorMessage: Message = {
-        id: Date.now().toString(),
+        chatId: `${appStartTime}-error-${errorSeq}`,
         role: 'assistant',
         content: '응답을 받는 중 오류가 발생했습니다. 다시 시도해주세요.',
-        timestamp: new Date(),
+        timestamp: appStartTimeDate,
       };
       setMessages((prev) => [...prev, errorMessage]);
     };
@@ -175,7 +192,7 @@ export default function ChatRoom() {
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((msg) => (
             <div
-              key={msg.id}
+              key={msg.chatId}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -187,7 +204,7 @@ export default function ChatRoom() {
                   {msg.content}
                   {msg.role === 'assistant' &&
                     isStreaming &&
-                    msg.id === messages[messages.length - 1]?.id && (
+                    msg.chatId === messages[messages.length - 1]?.chatId && (
                       <span className="inline-block w-1 h-4 ml-1 bg-gray-900 animate-pulse" />
                     )}
                 </p>
