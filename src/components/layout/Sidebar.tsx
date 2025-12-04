@@ -134,9 +134,7 @@ function SidebarActions({ isOpen, searchText, setSearchText, filteredChats }: Si
 
   const handleNewChat = () => {
     setIsDialogOpen(false);
-    setTimeout(() => {
-      navigate('/', { state: { refresh: true } });
-    }, 200);
+    navigate('/');
   };
 
   return (
@@ -196,6 +194,11 @@ function SidebarActions({ isOpen, searchText, setSearchText, filteredChats }: Si
 // Chat List Component
 // ============================================================================
 function ChatList({ isOpen, chats }: ChatListProps) {
+  const navigate = useNavigate();
+
+  const handleSelectChat = (chatId: string) => {
+    navigate(`/chat/${chatId}`);
+  };
   return (
     <div
       className={cn(
@@ -208,7 +211,7 @@ function ChatList({ isOpen, chats }: ChatListProps) {
           <label className="text-gray-500 mb-2">내 채팅</label>
           <div className="space-y-2">
             {chats.map((chat) => (
-              <ChatItem key={chat.id} chat={chat} />
+              <ChatItem key={chat.id} chat={chat} onClick={() => handleSelectChat(chat.id)} />
             ))}
           </div>
         </>

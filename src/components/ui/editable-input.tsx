@@ -25,7 +25,9 @@ export default function EditableInput({
 
   useEffect(() => {
     if (autoFocus && inputRef?.current) {
-      inputRef.current.focus();
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
     }
   }, [autoFocus, inputRef]);
 

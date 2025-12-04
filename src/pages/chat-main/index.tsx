@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { generateUniqueKey } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import EditableInput from '@/components/ui/editable-input';
 
 export default function ChatMain() {
-  const location = useLocation();
   const navigate = useNavigate();
   const editableRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState('');
@@ -22,12 +21,6 @@ export default function ChatMain() {
       editableRef.current.textContent = '';
     }
   };
-
-  useEffect(() => {
-    if (location.state?.refresh) {
-      requestAnimationFrame(() => editableRef.current?.focus());
-    }
-  }, [location.state]);
 
   return (
     <div className="flex h-full flex-col">

@@ -11,14 +11,15 @@ import type { Message, StreamChunk } from '@/types/chat';
 
 export default function ChatRoom() {
   const location = useLocation();
-  const initialMessage = location.state?.initialMessage;
-  const editableRef = useRef<HTMLDivElement>(null);
-  const [message, setMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasProcessedInitialMessage = useRef(false);
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
 
+  const editableRef = useRef<HTMLDivElement>(null);
+  const hasProcessedInitialMessage = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const initialMessage = location.state?.initialMessage;
+
+  const [message, setMessage] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const [messages, setMessages] = useState<Message[]>(() => {
     if (initialMessage) {
       return [
@@ -139,13 +140,19 @@ export default function ChatRoom() {
   }, []);
 
   useEffect(() => {
-    if (initialMessage && !hasProcessedInitialMessage.current) {
-      hasProcessedInitialMessage.current = true;
-      // 초기 메시지가 있으면 자동으로 전송
-      setTimeout(() => {
-        startStreaming(initialMessage);
-      }, 500);
-    }
+    if (!initialMessage || hasProcessedInitialMessage.current) return;
+
+    hasProcessedInitialMessage.current = true;
+
+    const timeoutId = setTimeout(() => {
+      startStreaming(initialMessage);
+    }, 500);
+
+    return () => {
+      if (!hasProcessedInitialMessage.current) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [initialMessage, startStreaming]);
 
   useEffect(() => {
