@@ -30,7 +30,7 @@ function ChatItem({ chat, onClick }: ChatItemProps) {
       className="py-2 px-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
       onClick={onClick}
     >
-      <div className="font-medium">{chat.title}</div>
+      <div className="font-medium">{chat.firstMessage}</div>
       {chat.lastMessage && <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>}
     </div>
   );
@@ -90,7 +90,11 @@ function SearchDialog({
           ) : (
             <div className="space-y-2">
               {filteredChats.map((chat) => (
-                <ChatItem key={chat.id} chat={chat} onClick={() => handleSelectChat(chat.id)} />
+                <ChatItem
+                  key={chat.conversationId}
+                  chat={chat}
+                  onClick={() => handleSelectChat(chat.conversationId)}
+                />
               ))}
             </div>
           )}
@@ -211,7 +215,11 @@ function ChatList({ isOpen, chats }: ChatListProps) {
           <label className="text-gray-500 mb-2">내 채팅</label>
           <div className="space-y-2">
             {chats.map((chat) => (
-              <ChatItem key={chat.id} chat={chat} onClick={() => handleSelectChat(chat.id)} />
+              <ChatItem
+                key={chat.conversationId}
+                chat={chat}
+                onClick={() => handleSelectChat(chat.conversationId)}
+              />
             ))}
           </div>
         </>
@@ -231,7 +239,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     const getChatList = async () => {
-      const response = await request.get<Chat[]>('/chats');
+      const response = await request.get<Chat[]>('/chats/list');
       console.log(response.data);
 
       setChatList(response.data);
@@ -245,7 +253,7 @@ export default function Sidebar() {
 
     return chatList.filter(
       (chat) =>
-        chat.title?.toLowerCase().includes(query) ||
+        chat.firstMessage?.toLowerCase().includes(query) ||
         chat.lastMessage?.toLowerCase().includes(query),
     );
   }, [debouncedSearch, chatList]);

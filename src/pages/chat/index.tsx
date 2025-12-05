@@ -3,40 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { SendHorizontal } from 'lucide-react';
-import { useLocation } from 'react-router';
+import { useParams } from 'react-router';
 
 import EditableInput from '@/components/ui/editable-input';
 
 import type { Message, StreamChunk } from '@/types/chat';
 
-const appStartTime = Date.now();
-const appStartTimeDate = new Date(appStartTime);
-let nextMessageSeq = 0;
-
 export default function ChatRoom() {
-  const location = useLocation();
+  const { id: conversationId } = useParams();
 
   const editableRef = useRef<HTMLDivElement>(null);
-  const hasProcessedInitialMessage = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const initialMessage = location.state?.initialMessage;
 
   const [message, setMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (initialMessage) {
-      return [
-        {
-          chatId: `${appStartTime}-initial`,
-          role: 'user',
-          content: initialMessage,
-          timestamp: appStartTimeDate,
-        },
-      ];
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,8 +28,7 @@ export default function ChatRoom() {
     if (!message.trim() || isStreaming) return;
 
     const userMessage = message.trim();
-    const seq = nextMessageSeq++;
-    const chatId = `${appStartTime}-${seq}`;
+    const messageId = crypto.randomUUID();
     setMessage('');
 
     if (editableRef.current) {
@@ -55,20 +36,19 @@ export default function ChatRoom() {
     }
 
     const newUserMessage: Message = {
-      chatId: chatId,
+      messageId,
       role: 'user',
       content: userMessage,
-      timestamp: appStartTimeDate,
+      timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, newUserMessage]);
+    scrollToBottom();
 
     try {
-      await request.post('/chats/message', {
-        chatId,
+      await request.post(`/chats/${conversationId}/message`, {
         role: 'user',
         content: userMessage,
-        timestamp: appStartTimeDate,
       });
     } catch (e) {
       console.error(e);
@@ -76,101 +56,86 @@ export default function ChatRoom() {
     }
 
     startStreaming(userMessage);
-    scrollToBottom();
   };
 
-  const startStreaming = useCallback((userMessage: string) => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
+  const startStreaming = useCallback(
+    (userMessage: string) => {
+      if (eventSourceRef.current) eventSourceRef.current.close();
 
-    setIsStreaming(true);
+      setIsStreaming(true);
 
-    // 쿼리 파라미터로 메시지 전송
-    const encodedMessage = encodeURIComponent(userMessage);
-    const sseUrl = `http://localhost:3000/api/sse?message=${encodedMessage}`;
+      const encodedMessage = encodeURIComponent(userMessage);
+      const sseUri = `http://localhost:3000/api/sse?message=${encodedMessage}&conversationId=${conversationId}`;
+      const eventSource = new EventSource(sseUri);
+      eventSourceRef.current = eventSource;
 
-    const eventSource = new EventSource(sseUrl);
-    eventSourceRef.current = eventSource;
+      let currentMessageId: string | null = null;
+      let streamingContent = '';
 
-    let currentMessageId: string | null = null;
-    let streamingContent = '';
+      eventSource.onmessage = (event) => {
+        try {
+          const chunk: StreamChunk = JSON.parse(event.data);
 
-    eventSource.onopen = () => {
-      console.log('SSE connection opened');
-    };
+          if (chunk.type === 'start') {
+            currentMessageId = chunk.messageId;
+            streamingContent = '';
 
-    eventSource.onmessage = (event) => {
-      try {
-        const chunk: StreamChunk = JSON.parse(event.data);
+            const assistantMessage: Message = {
+              messageId: currentMessageId,
+              role: 'assistant',
+              content: '',
+              timestamp: new Date(),
+            };
 
-        if (chunk.type === 'start') {
-          // 새 메시지 시작
-          currentMessageId = chunk.messageId;
-          streamingContent = '';
+            setMessages((prev) => [...prev, assistantMessage]);
+          } else if (chunk.type === 'chunk' && currentMessageId) {
+            streamingContent += chunk.content;
 
-          const assistantMessage: Message = {
-            chatId: currentMessageId,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-          };
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.messageId === currentMessageId ? { ...msg, content: streamingContent } : msg,
+              ),
+            );
 
-          setMessages((prev) => [...prev, assistantMessage]);
-        } else if (chunk.type === 'chunk' && currentMessageId) {
-          // 글자 추가
-          streamingContent += chunk.content;
-
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.chatId === currentMessageId ? { ...msg, content: streamingContent } : msg,
-            ),
-          );
-          scrollToBottom();
-        } else if (chunk.type === 'end') {
-          // 스트리밍 완료
-          eventSource.close();
-          setIsStreaming(false);
-          currentMessageId = null;
-          streamingContent = '';
+            scrollToBottom();
+          } else if (chunk.type === 'end') {
+            eventSource.close();
+            setIsStreaming(false);
+            currentMessageId = null;
+            streamingContent = '';
+          }
+        } catch (err) {
+          console.error('SSE parse error:', err);
         }
-      } catch (error) {
-        console.error('Failed to parse SSE message:', error);
-      }
-    };
-
-    eventSource.onerror = (err) => {
-      console.error('SSE error:', err);
-      eventSource.close();
-      setIsStreaming(false);
-
-      // 에러 메시지 추가
-      const errorSeq = nextMessageSeq++;
-      const errorMessage: Message = {
-        chatId: `${appStartTime}-error-${errorSeq}`,
-        role: 'assistant',
-        content: '응답을 받는 중 오류가 발생했습니다. 다시 시도해주세요.',
-        timestamp: appStartTimeDate,
       };
-      setMessages((prev) => [...prev, errorMessage]);
-    };
-  }, []);
+
+      eventSource.onerror = (err) => {
+        console.error('SSE error:', err);
+        eventSource.close();
+        setIsStreaming(false);
+      };
+    },
+    [conversationId],
+  );
 
   useEffect(() => {
-    if (!initialMessage || hasProcessedInitialMessage.current) return;
+    if (!conversationId) return;
 
-    hasProcessedInitialMessage.current = true;
+    (async () => {
+      try {
+        const result = await request.get(`/chats/${conversationId}/messages`);
+        setMessages(result.data);
 
-    const timeoutId = setTimeout(() => {
-      startStreaming(initialMessage);
-    }, 500);
+        const isUserLastMessage = result.data[result.data.length - 1];
 
-    return () => {
-      if (!hasProcessedInitialMessage.current) {
-        clearTimeout(timeoutId);
+        if (isUserLastMessage && isUserLastMessage.role === 'user') {
+          startStreaming(isUserLastMessage.content);
+        }
+      } catch (e) {
+        console.error(e);
       }
-    };
-  }, [initialMessage, startStreaming]);
+    })();
+  }, [conversationId, startStreaming]);
 
   useEffect(() => {
     scrollToBottom();
@@ -192,7 +157,7 @@ export default function ChatRoom() {
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((msg) => (
             <div
-              key={msg.chatId}
+              key={msg.messageId}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -204,7 +169,7 @@ export default function ChatRoom() {
                   {msg.content}
                   {msg.role === 'assistant' &&
                     isStreaming &&
-                    msg.chatId === messages[messages.length - 1]?.chatId && (
+                    msg.messageId === messages[messages.length - 1]?.messageId && (
                       <span className="inline-block w-1 h-4 ml-1 bg-gray-900 animate-pulse" />
                     )}
                 </p>

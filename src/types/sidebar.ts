@@ -1,6 +1,6 @@
 export interface Chat {
-  id: string;
-  title: string;
+  conversationId: string;
+  firstMessage: string;
   lastMessage: string;
 }
 
@@ -13,7 +13,7 @@ export interface SidebarActionsProps {
   isOpen: boolean;
   searchText: string;
   setSearchText: (v: string) => void;
-  filteredChats: Array<{ id: string; title: string; lastMessage?: string }>;
+  filteredChats: Array<{ conversationId: string; firstMessage: string; lastMessage?: string }>;
 }
 
 export interface ChatListProps {
@@ -22,7 +22,7 @@ export interface ChatListProps {
 }
 
 export interface ChatItemProps {
-  chat: { id: string; title: string; lastMessage?: string };
+  chat: { conversationId: string; firstMessage: string; lastMessage?: string };
   onClick?: () => void;
 }
 
@@ -32,8 +32,8 @@ export interface SearchDialogProps {
   searchText: string;
   onSearchChange: (text: string) => void;
   filteredChats: Array<{
-    id: string;
-    title: string;
+    conversationId: string;
+    firstMessage: string;
     lastMessage?: string;
   }>;
   onNewChat: () => void;

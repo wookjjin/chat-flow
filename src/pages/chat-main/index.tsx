@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 
-import { generateUniqueKey } from '@/lib/utils';
 import { SendHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
@@ -11,10 +10,23 @@ export default function ChatMain() {
   const editableRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState('');
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim()) return;
 
-    navigate(`/chat/${generateUniqueKey()}`, { state: { initialMessage: message } });
+    let conversationId;
+    try {
+      const res = await request.post('/chats/conversation', {
+        role: 'user',
+        content: message,
+      });
+
+      conversationId = res.data.conversationId;
+    } catch (err) {
+      console.error('Failed to create conversation:', err);
+      return;
+    }
+
+    navigate(`/chat/${conversationId}`);
 
     setMessage('');
     if (editableRef.current) {
