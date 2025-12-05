@@ -8,10 +8,10 @@ declare module 'axios' {
   }
 }
 
-const apiUrl = import.meta.env.VITE_API_SERVER_URL || '';
+const baseURL = import.meta.env.VITE_API_SERVER_URL || '';
 
 const instance = axios.create({
-  baseURL: apiUrl,
+  baseURL,
   meta: {
     timeout: 5000,
   },
