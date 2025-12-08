@@ -26,7 +26,11 @@ export default function ChatMain() {
       return;
     }
 
-    navigate(`/chat/${conversationId}`);
+    navigate(`/chat/${conversationId}`, {
+      state: {
+        refresh: true,
+      },
+    });
 
     setMessage('');
     if (editableRef.current) {

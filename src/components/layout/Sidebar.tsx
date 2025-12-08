@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { PanelLeftClose, PanelLeftOpen, Search, SquarePen, XIcon } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -236,16 +236,27 @@ export default function Sidebar() {
   const [searchText, setSearchText] = useState('');
   const [chatList, setChatList] = useState<Chat[]>([]);
   const debouncedSearch = useDebounce(searchText, 200);
+  const location = useLocation();
 
   useEffect(() => {
     const getChatList = async () => {
       const response = await request.get<Chat[]>('/chats/list');
-      console.log(response.data);
 
       setChatList(response.data);
     };
     getChatList();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.refresh) {
+      const getChatList = async () => {
+        const response = await request.get<Chat[]>('/chats/list');
+
+        setChatList(response.data);
+      };
+      getChatList();
+    }
+  }, [location.state]);
 
   const filteredChats = useMemo(() => {
     const query = debouncedSearch.trim().toLowerCase();
