@@ -65,7 +65,8 @@ export default function ChatRoom() {
       setIsStreaming(true);
 
       const encodedMessage = encodeURIComponent(userMessage);
-      const sseUri = `http://localhost:3000/api/sse?message=${encodedMessage}&conversationId=${conversationId}`;
+      const API_BASE_URL = import.meta.env.VITE_API_SERVER_URL || 'http://localhost:3000';
+      const sseUri = `${API_BASE_URL}/api/sse?message=${encodedMessage}&conversationId=${conversationId}`;
       const eventSource = new EventSource(sseUri);
       eventSourceRef.current = eventSource;
 
